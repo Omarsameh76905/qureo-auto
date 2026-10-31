@@ -32,10 +32,33 @@ jobs:
         with:
           gradle-version: '8.6'
 
+      - name: Configure Repositories & Settings
+        run: |
+          cat << 'EOF' > android_app/settings.gradle
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  maven { url 'https://repo1.maven.org/maven2/' }
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+              repositories {
+                  google()
+                  mavenCentral()
+                  maven { url 'https://repo1.maven.org/maven2/' }
+              }
+          }
+          rootProject.name = "QureoAutoSolver"
+          include ':app'
+          EOF
+
       - name: Build APK
         working-directory: android_app
         run: |
-          gradle assembleDebug --stacktrace
+          gradle assembleDebug --refresh-dependencies --stacktrace
           mkdir -p output_apk
           cp app/build/outputs/apk/debug/*.apk output_apk/QureoAutoSolver_Turbo.apk
 
@@ -49,6 +72,7 @@ jobs:
 
       - name: Publish Release with APK
         uses: softprops/action-gh-release@v2
+        continue-on-error: true
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
           tag_name: v2.0-mobile
@@ -56,9 +80,7 @@ jobs:
           body: |
             ### ⚡ QUREO AUTO SOLVER 2026 - TURBO MOBILE APK
             - حل جميع الفصول الـ 42 بنسبة 100% (5 ماسات كاملة لكل فصل).
-            - يدعم المنهج العربي والمنهج الإنجليزي تلقائياً.
-            
-            **طريقة التثبيت:** اضغط على `QureoAutoSolver_Turbo.apk` بالأسفل وحمله على موبايلك وثبته فوراً!
+            - يدعم المنهج العربي والإنجليزي تلقائياً.
           files: android_app/output_apk/QureoAutoSolver_Turbo.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
