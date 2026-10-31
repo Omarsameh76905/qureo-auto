@@ -24,8 +24,9 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Accept Android Licenses
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -33,12 +34,7 @@ jobs:
       - name: Build APK
         working-directory: android_app
         run: |
-          if [ -f gradlew ]; then
-            chmod +x gradlew
-            ./gradlew assembleDebug --stacktrace
-          else
-            gradle assembleDebug --stacktrace
-          fi
+          gradle assembleDebug --stacktrace
           mkdir -p output_apk
           cp app/build/outputs/apk/debug/*.apk output_apk/QureoAutoSolver_Turbo.apk
 
